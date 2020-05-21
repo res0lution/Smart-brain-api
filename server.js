@@ -56,4 +56,37 @@ app.post("/register", (res, req) => {
   res.json(db.users[db.users.length - 1]);
 });
 
-app.listen(3000, () => {});
+app.get("/profile/:id", (req, res) => {
+  const {id} = req.params
+  let found = false
+
+  db.users.forEach(user => {
+    if (user.id === id) {
+      found = true
+      res.json(user)
+    }
+  })
+
+  if (!found) {
+    res.status(400).json("no such user");
+  }
+})
+
+app.post("/image", (req, res) => {
+  const { id } = req.params;
+  let found = false;
+
+  db.users.forEach((user) => {
+    if (user.id === id) {
+      found = true;
+      user.entries++
+      res.json(user.entries);
+    }
+  });
+
+  if (!found) {
+    res.status(400).json("no such user");
+  }
+})
+
+app.listen(3000, () => { console.log("ok")});
