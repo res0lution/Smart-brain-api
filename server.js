@@ -1,9 +1,12 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt-nodejs");
+const cors = require("cors");
 
 const app = express();
 
 app.use(bodyParser.json());
+app.use(cors())
 
 const db = {
   users: [
@@ -22,6 +25,13 @@ const db = {
       password: "cookiess",
       entries: 0,
       joined: new Date(),
+    },
+  ],
+  login: [
+    {
+      id: "987",
+      hash: "",
+      email: "jon@email.com",
     },
   ],
 };
@@ -57,20 +67,20 @@ app.post("/register", (res, req) => {
 });
 
 app.get("/profile/:id", (req, res) => {
-  const {id} = req.params
-  let found = false
+  const { id } = req.params;
+  let found = false;
 
-  db.users.forEach(user => {
+  db.users.forEach((user) => {
     if (user.id === id) {
-      found = true
-      res.json(user)
+      found = true;
+      res.json(user);
     }
-  })
+  });
 
   if (!found) {
     res.status(400).json("no such user");
   }
-})
+});
 
 app.post("/image", (req, res) => {
   const { id } = req.params;
@@ -79,7 +89,7 @@ app.post("/image", (req, res) => {
   db.users.forEach((user) => {
     if (user.id === id) {
       found = true;
-      user.entries++
+      user.entries++;
       res.json(user.entries);
     }
   });
@@ -87,6 +97,8 @@ app.post("/image", (req, res) => {
   if (!found) {
     res.status(400).json("no such user");
   }
-})
+});
 
-app.listen(3000, () => { console.log("ok")});
+app.listen(3000, () => {
+  console.log("ok");
+});
