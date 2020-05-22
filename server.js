@@ -2,103 +2,49 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt-nodejs");
 const cors = require("cors");
+const knex = require("knex");
+
+const register = require("./controllers/register");
+const signin = require("./controllers/signin");
+const profile = require("./controllers/profile");
+const image = require("./controllers/image");
+
+const db = knex({
+  client: "pg",
+  connection: {
+    host: "127.0.0.1",
+    user: "aneagoie",
+    password: "",
+    database: "smart-brain",
+  },
+});
 
 const app = express();
 
+app.use(cors());
 app.use(bodyParser.json());
-app.use(cors())
-
-const db = {
-  users: [
-    {
-      id: "123",
-      name: "Jon",
-      email: "jon@email.com",
-      password: "cookies",
-      entries: 0,
-      joined: new Date(),
-    },
-    {
-      id: "124",
-      name: "Sam",
-      email: "sam@email.com",
-      password: "cookiess",
-      entries: 0,
-      joined: new Date(),
-    },
-  ],
-  login: [
-    {
-      id: "987",
-      hash: "",
-      email: "jon@email.com",
-    },
-  ],
-};
 
 app.get("/", (req, res) => {
   res.send(db.users);
 });
 
-app.post("/signin", (req, res) => {
-  if (
-    req.body.email === db.users[0].email &&
-    req.body.password === db.users[0].password
-  ) {
-    res.json("success");
-  } else {
-    res.status(400).json("error");
-  }
-});
-
-app.post("/register", (res, req) => {
-  const { email, password, name } = req.body;
-
-  db.users.push({
-    id: "125",
-    name: name,
-    email: email,
-    password: password,
-    entries: 0,
-    joined: new Date(),
-  });
-
-  res.json(db.users[db.users.length - 1]);
+app.post("/signin", signin.handleSignin(db, bcrypt));
+app.post("/register", (req, res) => {
+  register.handleRegister(req, res, db, bcrypt);
 });
 
 app.get("/profile/:id", (req, res) => {
-  const { id } = req.params;
-  let found = false;
-
-  db.users.forEach((user) => {
-    if (user.id === id) {
-      found = true;
-      res.json(user);
-    }
-  });
-
-  if (!found) {
-    res.status(400).json("no such user");
-  }
+  profile.handleProfileGet(req, res, db);
 });
 
-app.post("/image", (req, res) => {
-  const { id } = req.params;
-  let found = false;
+app.put("/image", (req, res) => {
+  image.handleImage(req, res, db);
+});
 
-  db.users.forEach((user) => {
-    if (user.id === id) {
-      found = true;
-      user.entries++;
-      res.json(user.entries);
-    }
-  });
-
-  if (!found) {
-    res.status(400).json("no such user");
-  }
+app.post("/imageurl", (req, res) => {
+  image.handleApiCall(req, res);
 });
 
 app.listen(3000, () => {
-  console.log("ok");
+  console.log("app is running on port 3000");
 });
